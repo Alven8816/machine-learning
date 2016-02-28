@@ -1,0 +1,67 @@
+---
+title: "Predict the manner in which they did the exercise"
+author: "余文华"
+date: "2016年2月27日"
+output: html_document
+---
+
+#download and read the data set
+```{r}
+pml <- read.csv("pml-training.csv",header = TRUE,stringsAsFactors = FALSE,na.strings = NA)
+test <- read.csv("pml-testing.csv",header = TRUE,stringsAsFactors = FALSE,na.strings = NA)
+library(dplyr)
+pml <- tbl_df(pml)
+
+```
+
+# data clear
+```{r}
+pml$classe <- as.factor(pml$classe)
+```
+
+##Removing the NA columns and irrelevant variables
+
+```{r,cache=TRUE}
+library(mice)
+md.pattern(pml)
+#there ara 19216 cases which less have one NA value.
+na <- sapply(pml,FUN = function(x){sum(is.na(x))})
+new_pml<- pml[,-which(na >= 13190)]
+#removing the irrelated columns
+pml <- new_pml[,-(1:8)]
+pml <- tbl_df(pml)
+```
+
+#split the training and testing set
+```{r}
+library(caret)
+set.seed(1234)
+train <- createDataPartition(y=pml$classe,p = 0.7,list = FALSE)
+training <- pml[train,]
+testing <- pml[-train,]
+```
+
+## simulate the outcomes using the Random forest
+```{r,cache= TRUE}
+fit_train <- train(classe ~ .,training,preProcess=c("center","scale"),method = "rf",trControl = trainControl(method = "cv", number = 4))
+fit_train
+```
+
+##Prediction the testing set
+```{r}
+prediction<- predict(fit_train,newdata = testing)
+confusionMatrix(prediction,testing$classe)
+```
+##Model assessment
+
+    the accuracy of the random forest model is 0.9946 (p<0.05),and we made the cross validation with k=5 and got a good result.
+    
+##Applying the Model on 20 Test Cases
+```{r}
+predict(fit_train,test)
+```
+## Conclusion
+   In result,we got the outcome of the prediction in the test set ,in which 1 to 5 namely A to E.
+
+
+
