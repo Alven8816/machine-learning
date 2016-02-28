@@ -43,7 +43,7 @@ testing <- pml[-train,]
 
 ## simulate the outcomes using the Random forest
 ```{r,cache= TRUE}
-fit_train <- train(classe ~ .,training,preProcess=c("center","scale"),method = "rf",trControl = trainControl(method = "cv", number = 4))
+fit_train <- train(classe ~ . , training , preProcess=c("center","scale"),method = "rf",trControl = trainControl(method = "cv", number = 4))
 fit_train
 ```
 
